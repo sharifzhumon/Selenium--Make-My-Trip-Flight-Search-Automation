@@ -41,20 +41,19 @@ public class Flight_Search_Automation {
 	}
 
 	// click from-to-destination
-	public static void location(String place, String path1, String searchWord) throws InterruptedException {
+	public static void location(String place, String path1, String searchWord) {
 		WebElement x = driver.findElement(By.cssSelector(path1));
 		x.clear();
 		x.sendKeys(searchWord);
 
 		w.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//p[text()='SUGGESTIONS ']")));
-		
+		w.until(ExpectedConditions.visibilityOfAllElements(driver.findElements(By.xpath("//div[@class='calc60']"))));
 			List <WebElement> ele= driver.findElements(By.xpath("//div[@class='calc60']/p[1]"));
-			System.out.println(ele.size());
-
+//			System.out.println(ele.size());
 			for(int i=0;i<ele.size();i++) {
 				
 				String text= ele.get(i).getText();
-				System.out.println(text+ "i= "+i);
+//				System.out.println(text+ "i= "+i);
 				if(text.contains(place)) {
 					
 					driver.findElements(By.xpath("//li[@role='option']/div[1]//div[@class='calc60']")).get(i).click();
@@ -64,8 +63,56 @@ public class Flight_Search_Automation {
 			}
 
 	}
+	
+	//calender date picking
+	public static void datePicker(String date, String monthyear) {
+		boolean b = true;
 
-	public static void main(String[] args) throws InterruptedException {
+		while (b) {
+
+			WebElement group = driver
+					.findElement(By.cssSelector(".DayPicker-Month:first-of-type"));
+
+			w.until(ExpectedConditions
+					.visibilityOfAllElements(group.findElement(By.cssSelector(".DayPicker-Caption div"))));
+
+
+			// getting MonthYear text
+			String monthYear = group.findElement(By.cssSelector(".DayPicker-Caption div")).getText();
+
+
+
+			if (monthYear.equalsIgnoreCase(monthyear)) {
+				w.until(ExpectedConditions
+						.visibilityOfAllElements(group.findElements(By.cssSelector(".dateInnerCell p:nth-of-type(1)"))));
+				List<WebElement> dates = group.findElements(By.cssSelector(".dateInnerCell p:nth-of-type(1)"));
+
+				for (WebElement day : dates) {
+					w.until(ExpectedConditions.elementToBeClickable(day));
+					String current = day.getText();
+
+					if (current.equalsIgnoreCase(date)) {
+						day.click();
+						b = false;
+						break;
+
+					}
+				}
+
+			}
+
+			else {
+
+				driver.findElement(By.cssSelector("[class='DayPicker-NavButton DayPicker-NavButton--next']")).click();
+
+			}
+
+		}
+
+	}
+
+
+	public static void main(String[] args) {
 
 		System.setProperty("webdriver.chrome.driver", "C:\\Users\\Demiurges\\Documents\\drivers\\chromedriver.exe");
 //		System.setProperty("webdriver.gecko.driver", "C:\\Users\\Demiurges\\Documents\\drivers\\geckodriver.exe");
@@ -74,10 +121,10 @@ public class Flight_Search_Automation {
 //		WebDriver driver= new FirefoxDriver();
 
 		driver.manage().window().maximize();
-//		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
 		// Explicit wait
-		w = new WebDriverWait(driver, 10);
+		w = new WebDriverWait(driver, 5);
 
 		driver.get("https://www.makemytrip.com/");
 		
@@ -113,8 +160,6 @@ public class Flight_Search_Automation {
 
 		String way = "OneWay";
 
-		selected(li, class_select);
-
 		click_button(li, way);
 
 		selected(li, class_select);
@@ -122,7 +167,7 @@ public class Flight_Search_Automation {
 //		Thread.sleep(1000l);
 
 		// From
-		driver.findElement(By.cssSelector("[class='fsw_inputBox searchCity inactiveWidget ']")).click();
+		driver.findElement(By.cssSelector("label[for='fromCity']")).click();
 
 		String path1From = "input[placeholder='From']";
 		String fromLoc = "dha";
@@ -138,11 +183,12 @@ public class Flight_Search_Automation {
 
 		location(placeTo, path1To,toLoc);
 
-		// Dates- Current date
-		driver.findElement(By.cssSelector(".DayPicker-Day.DayPicker-Day--selected")).click();
+		// Calender date picking
+		datePicker("21","May 2021");
+		
 
+		
 		// Travellers class and Passenger
-
 
 		driver.findElement(By.cssSelector(".fsw_inputBox.flightTravllers.inactiveWidget ")).click();
 
